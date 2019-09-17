@@ -20,35 +20,35 @@ HC-net is a open source with a [public repository](https://github.com/HashCash-C
 
 ### CentOS
 
-#### CentOS 7
-Just like 14.04, you can install the test toolchain to build and run HCNet-Core.
+#### General CentOS Setup
+If you just started a fresh instance of CentOS you should take some steps before the installation of hcnet-core to assure the system is secure and up to date.
 
-Alternatively, if you want to just depend on stock 16.04, you will have to build with clang *and* have use `libc++` instead of `libstdc++` when compiling.
+	The first thing to do is to run:
+	sudo yum upgrade
+	sudo yum install vim
 
-After installing packages, head to [building with clang and libc++](#building-with-clang-and-libc).
+This will get the repository and all system packages up to date. And of course give vim so that we can more easily edit configuration files.
 
-
-#### Adding the test toolchain
-    # NOTE: newer version of the compilers are not
-    #    provided by stock distributions
-    #    and are provided by the /test toolchain
-    sudo apt-get install software-properties-common
-    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-    sudo apt-get update
+    #    We will be compiling hcnet-core from source and need the developer tools installed:
+    sudo yum groupinstall 'Development Tools'
+    sudo yum install postgresql-devel
 
 #### Installing packages
-    # common packages
-    sudo apt-get install git build-essential pkg-config autoconf automake libtool bison flex libpq-dev
     # if using clang
-    sudo apt-get install clang-5.0
+    sudo yum install devtoolset-7 llvm-toolset-7
+    sudo scl enable devtoolset-7 llvm-toolset-7 bash
+    clang --version
     # clang with libstdc++
-    sudo apt-get install gcc-6
-    sudo apt-get install libc++-dev libc++abi-dev
-    # if using g++ or building with libstdc++
-    sudo apt-get install gcc-6 g++-6 cpp-6
+    sudo yum install centos-release-scl
+	sudo yum install devtoolset-7-gcc*
+	scl enable devtoolset-7 bash
+	gcc --version
+	g++ --version
+	c++ --version
+    # building with libstdc++
+    sudo rpm -i https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+	sudo yum install svn
 
-    # optional: pandoc (to compile man pages)
-    sudo apt-get install pandoc
 
 In order to make changes, you'll need to install the proper version of clang-format.
 
@@ -56,6 +56,21 @@ In order to install the llvm (clang) toolchain, you may have to follow instructi
 
     sudo apt-get install clang-format-5.0
 
+#### Configuring libpq
+At one point during the hcnet-core compilation you would run ./configure and it would fail with the following error:
+No package 'libpq' found
+The problem is that when you install PostgreSQL dev tools on CentOS it doesn't install the required file for pkg-config to find it. To solve this you can create the file manually.
+
+	/usr/lib64/pkgconfig/libpq.pc:
+	prefix=/usr
+	libdir=${prefix}/lib64
+	includedir=${prefix}/include/pgsql
+	Name: LibPQ
+	Version: 5.5.0
+	Description: PostgreSQL client library
+	Requires:
+	Libs: -L${libdir}/libpq.so -lpq
+	Cflags: -I${includedir}
 
 ## Basic Installation
 
