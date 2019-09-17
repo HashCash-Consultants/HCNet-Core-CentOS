@@ -1,0 +1,4 @@
+#include "main/HcNetCoreVersion.h"
+
+const std::string STELLAR_CORE_VERSION = "%%VERSION%%";
+
