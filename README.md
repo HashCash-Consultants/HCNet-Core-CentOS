@@ -79,7 +79,7 @@ The problem is that when you install PostgreSQL dev tools on CentOS it doesn't i
 
 After the process is completed you can see the HcNet-core build inside /home/centos/HCNet-Core/src 
 
-Postgres database need to install to store core data but before that you must setup aurora. For that please check https://github.com/HashCash-Consultants/Go-CentOS
+Postgres database need to install to store core data.
 ## Install postgres database
 ```
     # First add the latest version to your rpm for install using yum.
@@ -115,6 +115,8 @@ Postgres database need to install to store core data but before that you must se
     sudo systemctl status postgresql-9.6
 
 ```
+Now you must setup aurora. For that please check https://github.com/HashCash-Consultants/Go-CentOS
+
 - Postgres user for HCNet core
 ```
 sudo -s
