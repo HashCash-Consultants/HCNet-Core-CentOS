@@ -82,19 +82,19 @@ After the process is completed you can see the HcNet-core build inside /home/cen
 Postgres database need to install to store core data but before that you must setup aurora. For that please check https://github.com/HashCash-Consultants/Go-CentOS
 ## Install postgres database
 ```
-- First add the latest version to your rpm for install using yum.
+    # First add the latest version to your rpm for install using yum.
 	sudo rpm -Uvh http://yum.postgresql.org/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
 
-- Then run the install command:
+    # Then run the install command:
 	sudo yum install postgresql96-server postgresql96
 
-- Initialize with this:
+	# Initialize with this:
 	sudo /usr/pgsql-9.6/bin/postgresql96-setup initdb
 
-- Next edit the pg_hba.conf file, in the same folder:
+    # Next edit the pg_hba.conf file, in the same folder:
 	sudo vim var/lib/pgsql/9.6/data/pg_hba.conf
 	Scroll to the bottom of the file and add these lines if they don’t already exist:
-	#IPv4 remote connections (all users and IP addresses):
+	# IPv4 remote connections (all users and IP addresses):
 	host all all 0.0.0.0/0 md5
 
 	And update the following lines from 
@@ -107,11 +107,11 @@ Postgres database need to install to store core data but before that you must se
     On the second line beginning with ‘host’ make sure there is no # added. You want it to read as above.
 	Exit saving changes.
 
-- Now start and enable postgresdb
+    # Now start and enable postgresdb
 	sudo systemctl start postgresql-9.6
 	sudo systemctl enable postgresql-9.6 
 
-- Check postgresdb start/stop status 
+    # Check postgresdb start/stop status 
     sudo systemctl status postgresql-9.6
 
 ```
