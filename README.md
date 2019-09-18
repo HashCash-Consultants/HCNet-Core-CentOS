@@ -50,12 +50,6 @@ This will get the repository and all system packages up to date. And of course g
 	sudo yum install svn
 
 
-In order to make changes, you'll need to install the proper version of clang-format.
-
-In order to install the llvm (clang) toolchain, you may have to follow instructions on https://apt.llvm.org/
-
-    sudo apt-get install clang-format-5.0
-
 #### Configuring libpq
 At one point during the hcnet-core compilation you would run ./configure and it would fail with the following error:
 No package 'libpq' found
@@ -79,37 +73,47 @@ The problem is that when you install PostgreSQL dev tools on CentOS it doesn't i
 - `git submodule init`
 - `git submodule update`
 - Type `./autogen.sh`.
-- Type `./configure`   *(If configure complains about compiler versions, try `CXX=clang-5.0 ./configure` or `CXX=g++-6 ./configure` or similar, depending on your compiler.)*
-- Type `make` or `make -j`(for aggressive parallel build)
-- Type `make check` to run tests.
-- Type `make install` to install.
+- Type `./configure`   
+- Type `make -j`(for aggressive parallel build)
 
-## Building with clang and libc++
 
-On some systems, building with `libc++`, [LLVM's version of the standard library](https://libcxx.llvm.org/) can be done instead of `libstdc++` (typically used on Linux).
+After the process is completed you can see the HcNet-core build inside /home/centos/HCNet-Core/src 
 
-NB: there are newer versions available of both clang and libc++, you will have to use the versions suited for your system.
-
-You may need to install additional packages for this, for example, on Linux Ubuntu:
-
-    # install libc++ headers
-    sudo apt-get install libc++-dev libc++abi-dev
-
-Here are sample steps to achieve this:
-
-    export CC=clang-5.0
-    export CXX=clang++-5.0
-    export CFLAGS="-O3 -g1 -fno-omit-frame-pointer"
-    export CXXFLAGS="$CFLAGS -stdlib=libc++ -isystem /usr/include/libcxxabi"
-    git clone https://github.com/HashCash-Consultants/HCNet-Core
-    cd HCNet-Core/
-    ./autogen.sh && ./configure && make -j6
-
-Postgres database need to install to store core data
+Postgres database need to install to store core data but before that you must setup aurora. For that please check https://github.com/HashCash-Consultants/Go-CentOS
 ## Install postgres database
 ```
-sudo apt-get update
-sudo apt-get install postgresql postgresql-contrib
+- First add the latest version to your rpm for install using yum.
+	sudo rpm -Uvh http://yum.postgresql.org/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+
+- Then run the install command:
+	sudo yum install postgresql96-server postgresql96
+
+- Initialize with this:
+	sudo /usr/pgsql-9.6/bin/postgresql96-setup initdb
+
+- Next edit the pg_hba.conf file, in the same folder:
+	sudo vim var/lib/pgsql/9.6/data/pg_hba.conf
+	Scroll to the bottom of the file and add these lines if they don’t already exist:
+	#IPv4 remote connections (all users and IP addresses):
+	host all all 0.0.0.0/0 md5
+
+	And update the following lines from 
+	host all all 127.0.0.1/32 ident
+	host all all          ::1/128 ident
+
+	to 
+	host all all 127.0.0.1/32 md5
+	host all all          ::1/128 md5
+    On the second line beginning with ‘host’ make sure there is no # added. You want it to read as above.
+	Exit saving changes.
+
+- Now start and enable postgresdb
+	sudo systemctl start postgresql-9.6
+	sudo systemctl enable postgresql-9.6 
+
+- Check postgresdb start/stop status 
+    sudo systemctl status postgresql-9.6
+
 ```
 - Postgres user for HCNet core
 ```
