@@ -32,15 +32,15 @@ It will also be useful to understand how [data flows](https://www.HcNet.org/deve
 
 ### Benefits of running a node
 
-You get to run your own Horizon instance:
+You get to run your own Aurora instance:
 * Allows for customizations (triggers, etc) of the business logic or APIs
 * Full control of which data to retain (historical or online)
 * A trusted entry point to the network
   * Trusted end to end (can implement additional counter measures to secure services)
-  * Open Horizon increases customer trust by allowing to query at the source (ie: larger token issuers have an official endpoint that can be queried)
+  * Open Aurora increases customer trust by allowing to query at the source (ie: larger token issuers have an official endpoint that can be queried)
 * Control of SLA
 
-note: in this document we use "Horizon" as the example implementation of a first tier service built on top of HcNet-core, but any other system would get the same benefits.
+note: in this document we use "Aurora" as the example implementation of a first tier service built on top of HcNet-core, but any other system would get the same benefits.
 
 ### Level of participation to the network
 
@@ -50,7 +50,7 @@ As a node operator you can participate to the network in multiple ways.
 | -------------------------------------------------- | ------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | description                                        | non-validator | all of watcher + publish to archive | all of watcher + active participation in consensus (submit proposals for the transaction set to include in the next ledger) | basic validator + publish to archive |
 | submits transactions                               | yes           | yes                                 | yes                                                                                                                         | yes                                  |
-| supports horizon                                   | yes           | yes                                 | yes                                                                                                                         | yes                                  |
+| supports Aurora                                   | yes           | yes                                 | yes                                                                                                                         | yes                                  |
 | participates in consensus                          | no            | no                                  | yes                                                                                                                         | yes                                  |
 | helps other nodes to catch up and join the network | no            | yes                                 | no                                                                                                                          | yes                                  |
 | Increase the resiliency of the network             | No            | Medium                              | Low                                                                                                                         | High                                 |
@@ -68,7 +68,7 @@ Use cases:
 * Ephemeral instances, where having other nodes depend on those nodes is not desired
 * Potentially reduced administration cost (no or reduced SLA)
 * Real time network monitoring (which validators are present, etc)
-* Generate network meta-data for other systems (Horizon) 
+* Generate network meta-data for other systems (Aurora) 
 
 **Operational requirements**:
 * a [database](#database)
@@ -144,7 +144,7 @@ Storage wise, 20 GB seems to be an excellent working set as it leaves plenty of 
   * HcNet-core needs access to a database (postgresql for example), which may reside on a different machine on the network
   * other connections can safely be blocked
 * **inbound**: HcNet-core exposes an *unauthenticated* HTTP endpoint on port `HTTP_PORT` (default 11626)
-  * it is used by other systems (such as Horizon) to submit transactions (so may have to be exposed to the rest of your internal ips)
+  * it is used by other systems (such as Aurora) to submit transactions (so may have to be exposed to the rest of your internal ips)
   *  query information (info, metrics, ...) for humans and automation
   *  perform administrative commands (schedule upgrades, change log levels, ...)
 
@@ -166,13 +166,13 @@ The version number scheme that we follow is `protocol_version.release_number.pat
 See the [INSTALL](https://github.com/HcNet/HcNet-core/blob/master/INSTALL.md) for build instructions.
 
 ### Package based Installation
-If you are using Ubuntu 16.04 LTS we provide the latest stable releases of [HcNet-core](https://github.com/HcNet/HcNet-core) and [HcNet-horizon](https://github.com/HcNet/go/tree/master/services/horizon) in Debian binary package format.
+If you are using Ubuntu 16.04 LTS we provide the latest stable releases of [HcNet-core](https://github.com/HcNet/HcNet-core) and [HcNet-Aurora](https://github.com/HcNet/go/tree/master/services/Aurora) in Debian binary package format.
 
 See [detailed installation instructions](https://github.com/HcNet/packages#sdf---packages)
 
 ### Container based installation
 Docker images are maintained in a few places, good starting points are:
- * the [quickstart image](https://github.com/HcNet/docker-HcNet-core-horizon)
+ * the [quickstart image](https://github.com/HcNet/docker-HcNet-core-Aurora)
  * the [standalone image](https://github.com/HcNet/docker-HcNet-core). **Warning**: this only tracks the latest master, so you have to find the image based on the [release](https://github.com/HcNet/HcNet-core/releases) that you want to use.
 
 ## Configuring
@@ -187,7 +187,7 @@ HcNet-core loads `./HcNet-core.cfg`, but you can specify a different file to loa
 
 The [example config](https://github.com/HcNet/HcNet-core/blob/master/docs/HcNet-core_example.cfg) is not a real configuration, but documents all possible configuration elements as well as their default values.
 
-Here is an [example test network config](https://github.com/HcNet/docker-HcNet-core-horizon/blob/master/testnet/core/etc/HcNet-core.cfg) for connecting to the test network.
+Here is an [example test network config](https://github.com/HcNet/docker-HcNet-core-Aurora/blob/master/testnet/core/etc/HcNet-core.cfg) for connecting to the test network.
 
 Here is an [example public network config](https://github.com/HcNet/docs/blob/master/other/HcNet-core-validator-example.cfg) for connecting to the public network.
 
@@ -346,7 +346,7 @@ Cross reference your validator settings, in particular:
 * quorum set
   * public keys of the validators that you manage grouped properly
 * seed defined if validating
-* [Automatic maintenance](#cursors-and-automatic-maintenance) configured properly, especially when HcNet-core is used in conjunction with a downstream system like Horizon.
+* [Automatic maintenance](#cursors-and-automatic-maintenance) configured properly, especially when HcNet-core is used in conjunction with a downstream system like Aurora.
 
 ### Database and local state
 
@@ -363,20 +363,20 @@ HcNet-core stores the state of the ledger in a SQL database.
 
 This DB should either be a SQLite database or, for larger production instances, a separate PostgreSQL server.
 
-*Note: Horizon currently depends on using PostgreSQL.*
+*Note: Aurora currently depends on using PostgreSQL.*
 
 For how to specify the database, 
 see the [example config](https://github.com/HcNet/HcNet-core/blob/master/docs/HcNet-core_example.cfg).
 
 ##### Cursors and automatic maintenance
 
-Some tables in the database act as a publishing queue for external systems such as Horizon and generate **meta data** for changes happening to the distributed ledger.
+Some tables in the database act as a publishing queue for external systems such as Aurora and generate **meta data** for changes happening to the distributed ledger.
 
 If not managed properly those tables will grow without bounds. To avoid this, a built-in scheduler will delete data from old ledgers that are not used anymore by other parts of the system (external systems included).
 
 The settings that control the automatic maintenance behavior are: `AUTOMATIC_MAINTENANCE_PERIOD`,  `AUTOMATIC_MAINTENANCE_COUNT` and `KNOWN_CURSORS`.
 
-By default, HcNet-core will perform this automatic maintenance, so be sure to disable it until you have done the appropriate data ingestion in downstream systems (Horizon for example sometimes needs to reingest data).
+By default, HcNet-core will perform this automatic maintenance, so be sure to disable it until you have done the appropriate data ingestion in downstream systems (Aurora for example sometimes needs to reingest data).
 
 If you need to regenerate the meta data, the simplest way is to replay ledgers for the range you're interested in after (optionally) clearing the database with `newdb`.
 
@@ -810,7 +810,7 @@ HcNet-core can be gracefully exited at any time by delivering `SIGINT` or
 
 HcNet-core can also be packaged in a container system such as Docker, so long 
 as `BUCKET_DIR_PATH` and the database are stored on persistent volumes. For an
-example, see [docker-HcNet-core](https://github.com/HcNet/docker-HcNet-core-horizon).
+example, see [docker-HcNet-core](https://github.com/HcNet/docker-HcNet-core-Aurora).
 
 ### In depth architecture
 
